@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using TestVm.Core.Collections;
 
 namespace TestVm.Core.Vm
@@ -30,6 +29,8 @@ namespace TestVm.Core.Vm
     public const int REG_TYPE_8L = 3;
 
     public bool IsEnd { get; private set; } = false;
+    public bool IsZero { get; private set; } = false;
+    public bool IsSign { get; private set; } = false;
 
     private Queue<Func<bool>> _apiQueue = new Queue<Func<bool>>();
     private Dictionary<OPCODE, Func<bool>> _opTable = new Dictionary<OPCODE, Func<bool>>();
@@ -73,7 +74,7 @@ namespace TestVm.Core.Vm
       OPCODE op = (OPCODE)_code.ReadByte();
       if (_opTable.TryGetValue(op, out Func<bool> opFunc))
         return opFunc();
-      return false;
+      return PushError($"実行できないOPCODEです => {op}");
     }
 
     #region Opcode Runner
@@ -83,8 +84,7 @@ namespace TestVm.Core.Vm
       int memPtr = _code.ReadChar();
       if(_memory.TryGetUi8(memPtr, out byte val8))
       {
-        SetRegUi8(regId, val8);
-        return !IsError;
+        return TrySetRegUi8(regId, val8);
       }
       return PushError($"メモリ範囲外を指定しました => ptr: {memPtr}");
     }
@@ -95,8 +95,7 @@ namespace TestVm.Core.Vm
       int memPtr = _code.ReadChar();
       if (_memory.TryGetUi16(memPtr, out ushort val16))
       {
-        SetRegUi16(regId, val16);
-        return true;
+        return TrySetRegUi16(regId, val16);
       }
       return PushError($"メモリ範囲外を指定しました => ptr: {memPtr}");
     }
@@ -107,10 +106,64 @@ namespace TestVm.Core.Vm
       int memPtr = _code.ReadChar();
       if (_memory.TryGetUi32(memPtr, out uint val32))
       {
-        SetRegUi32(regId, val32);
-        return true;
+        return TrySetRegUi32(regId, val32);
       }
       return PushError($"メモリ範囲外を指定しました => ptr: {memPtr}");
+    }
+
+    public bool OpSubB()
+    {
+      int rsId = _code.ReadByte();
+      int rtId = _code.ReadByte();
+      uint a, b;
+      if (!TryGetReg(rsId, out a))
+        return false;
+      if (!TryGetReg(rtId, out b))
+        return false;
+
+      return TrySetRegUi8(rsId, (byte)(a - b));
+    }
+
+    public bool OpSubW()
+    {
+      int rsId = _code.ReadByte();
+      int rtId = _code.ReadByte();
+      uint a, b;
+      if (!TryGetReg(rsId, out a))
+        return false;
+      if (!TryGetReg(rtId, out b))
+        return false;
+
+      return TrySetRegUi16(rsId, (ushort)(a - b));
+    }
+
+    public bool OpSubD()
+    {
+      int rsId = _code.ReadByte();
+      int rtId = _code.ReadByte();
+      uint a, b;
+      if (!TryGetReg(rsId, out a))
+        return false;
+      if (!TryGetReg(rtId, out b))
+        return false;
+
+      return TrySetRegUi32(rsId, (a - b));
+    }
+
+    public bool OpCmp()
+    {
+      int rsId = _code.ReadByte();
+      int rtId = _code.ReadByte();
+      uint a, b;
+      if (!TryGetReg(rsId, out a))
+        return false;
+      if (!TryGetReg(rtId, out b))
+        return false;
+
+      IsZero = (a - b) == 0;
+      IsSign = ((a - b) >> 31) == 1;
+
+      return true;
     }
     #endregion
 
@@ -182,26 +235,62 @@ namespace TestVm.Core.Vm
       _opTable[OPCODE.LOAD_B] = OpLoadB;
       _opTable[OPCODE.LOAD_W] = OpLoadW;
       _opTable[OPCODE.LOAD_D] = OpLoadD;
+      _opTable[OPCODE.SUB_B] = OpSubB;
+      _opTable[OPCODE.SUB_W] = OpSubW;
+      _opTable[OPCODE.SUB_D] = OpSubW;
+      _opTable[OPCODE.CMP_B] = OpCmp;
+      _opTable[OPCODE.CMP_W] = OpCmp;
+      _opTable[OPCODE.CMP_D] = OpCmp;
     }
 
     #region Register Access Helper
     public int RegType(int idx, int type)
       => idx * 4 + type;
 
-    public uint GetReg(int id)
-      => _registers[id / 4][id % 4];
-
-    public void SetRegUi32(int id, uint val)
-      => _registers[id / 4][0] = val;
-
-    public void SetRegUi16(int id, ushort val)
-      => _registers[id / 4][1] = val;
-
-    public void SetRegUi8(int id, byte val)
+    public bool TryGetReg(int id, out uint value)
     {
-      if (id % 4 != 2 && id % 4 != 3)
+      value = 0;
+      if (id / 4 < 0 || _registers.Length <= id / 4)
+      {
         PushError($"レジスタの値の設定に失敗しました");
+        return false;
+      }
+      value = _registers[id / 4][id % 4];
+      return true;
+    }
+
+    public bool TrySetRegUi32(int id, uint val)
+    {
+      if (id / 4 < 0 || _registers.Length <= id / 4)
+      {
+        return PushError($"レジスタの値の設定に失敗しました");
+      }
+      _registers[id / 4][0] = val;
+      return true;
+    }
+
+    public bool TrySetRegUi16(int id, ushort val)
+    {
+      if (id / 4 < 0 || _registers.Length <= id / 4)
+      {
+        return PushError($"レジスタの値の設定に失敗しました");
+      }
+      _registers[id / 4][1] = val;
+      return true;
+    }
+
+    public bool TrySetRegUi8(int id, byte val)
+    {
+      if(id / 4 < 0 || _registers.Length <= id / 4)
+      {
+        return PushError($"レジスタの値の設定に失敗しました");
+      }
+      if (id % 4 != 2 && id % 4 != 3)
+      {
+        return PushError($"レジスタの値の設定に失敗しました");
+      }
       _registers[id / 4][id % 4] = val;
+      return true;
     }
     #endregion
   }

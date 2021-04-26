@@ -85,5 +85,12 @@ namespace TestVm.Core.Collections
       }
       return size;
     }
+
+    public bool TrySetPosition(int position)
+    {
+      if (position > Size || position < 0) return false;
+      Position = position;
+      return true;
+    }
   } // class
 } // namespace

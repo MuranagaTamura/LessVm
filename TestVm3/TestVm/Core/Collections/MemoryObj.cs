@@ -1,4 +1,6 @@
-﻿namespace TestVm.Core.Collections
+﻿using System;
+
+namespace TestVm.Core.Collections
 {
   public class MemoryObj
   {
@@ -9,6 +11,13 @@
     {
       _data = new byte[size];
       _size = size;
+    }
+
+    public MemoryObj(MemoryObj obj)
+    {
+      _size = obj._size;
+      _data = new byte[_size];
+      Array.Copy(obj._data, _data, _size);
     }
 
     public bool TryGetUi32(int ptr, out uint result)

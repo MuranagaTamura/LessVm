@@ -27,6 +27,27 @@
     LOAD_D,
     #endregion
     #region STORE
+    /// <summary>
+    /// 内容:
+    ///   レジスタからメモリに格納（byte）
+    /// フォーマット:
+    ///   STORE_B(u8) R(u8) Mem(u32)
+    /// </summary>
+    STORE_B,
+    /// <summary>
+    /// 内容:
+    ///   レジスタからメモリに格納（ushort）
+    /// フォーマット:
+    ///   STORE_W(u8) R(u8) Mem(u16)
+    /// </summary>
+    STORE_W,
+    /// <summary>
+    /// 内容:
+    ///   レジスタからメモリに格納（uint）
+    /// フォーマット:
+    ///   STORE_D(u8) R(u8) Mem(u32)
+    /// </summary>
+    STORE_D,
     #endregion
 
     // レジスタ間アクセス
@@ -77,35 +98,119 @@
 
     // 算術
     #region ADD
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の加算結果をレジスタに格納（byte）
+    /// フォーマット:
+    ///   ADD_B(u8) R(u8) R(u8)
+    /// </summary>
+    ADD_B,
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の加算結果をレジスタに格納（ushort）
+    /// フォーマット:
+    ///   ADD_W(u8) R(u8) R(u8)
+    /// </summary>
+    ADD_W,
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の加算結果をレジスタに格納（uint）
+    /// フォーマット:
+    ///   ADD_D(u8) R(u8) R(u8)
+    /// </summary>
+    ADD_D,
     #endregion
     #region SUB
     /// <summary>
     /// 内容:
-    ///   即値からレジスタに格納（byte）
+    ///   レジスタ同士の減算結果をレジスタに格納（byte）
     /// フォーマット:
     ///   SUB_B(u8) R(u8) R(u8)
     /// </summary>
     SUB_B,
     /// <summary>
     /// 内容:
-    ///   即値からレジスタに格納（ushort）
+    ///   レジスタ同士の減算結果をレジスタに格納（ushort）
     /// フォーマット:
     ///   SUB_W(u8) R(u8) R(u8)
     /// </summary>
     SUB_W,
     /// <summary>
     /// 内容:
-    ///   即値からレジスタに格納（uint）
+    ///   レジスタ同士の減算結果をレジスタに格納（uint）
     /// フォーマット:
     ///   SUB_D(u8) R(u8) R(u8)
     /// </summary>
     SUB_D,
     #endregion
     #region MUL
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の乗算結果をレジスタに格納（byte）
+    /// フォーマット:
+    ///   MUL_B(u8) R(u8) R(u8)
+    /// </summary>
+    MUL_B,
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の乗算結果をレジスタに格納（ushort）
+    /// フォーマット:
+    ///   MUL_W(u8) R(u8) R(u8)
+    /// </summary>
+    MUL_W,
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の乗算結果をレジスタに格納（uint）
+    /// フォーマット:
+    ///   MUL_D(u8) R(u8) R(u8)
+    /// </summary>
+    MUL_D,
     #endregion
     #region DIV
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の除算結果をレジスタに格納（byte）
+    /// フォーマット:
+    ///   DIV_B(u8) R(u8) R(u8)
+    /// </summary>
+    DIV_B,
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の除算結果をレジスタに格納（ushort）
+    /// フォーマット:
+    ///   DIV_W(u8) R(u8) R(u8)
+    /// </summary>
+    DIV_W,
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の除算結果をレジスタに格納（uint）
+    /// フォーマット:
+    ///   DIV_D(u8) R(u8) R(u8)
+    /// </summary>
+    DIV_D,
     #endregion
     #region REM
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の剰余結果をレジスタに格納（byte）
+    /// フォーマット:
+    ///   REM_B(u8) R(u8) R(u8)
+    /// </summary>
+    REM_B,
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の剰余結果をレジスタに格納（ushort）
+    /// フォーマット:
+    ///   REM_W(u8) R(u8) R(u8)
+    /// </summary>
+    REM_W,
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の剰余結果をレジスタに格納（uint）
+    /// フォーマット:
+    ///   REM_D(u8) R(u8) R(u8)
+    /// </summary>
+    REM_D,
     #endregion
     #region SLL
     #endregion
@@ -145,17 +250,51 @@
 
     // 実行位置変更
     #region JMP
+    /// <summary>
+    /// 内容:
+    ///   即値にジャンプ
+    /// フォーマット:
+    ///   JMP(u8) Imm(u16)
+    /// </summary>
+    JMP,
     #endregion
     #region JEQ
+    /// <summary>
+    /// 内容:
+    ///   Zero=1なら即値にジャンプ
+    /// フォーマット:
+    ///   JEQ(u8) Imm(u16)
+    /// </summary>
+    JEQ,
     #endregion
     #region JNE
+    /// <summary>
+    /// 内容:
+    ///   Zero=0なら即値にジャンプ
+    /// フォーマット:
+    ///   JNE(u8) Imm(u16)
+    /// </summary>
+    JNE,
     #endregion
     #region JLT
+    /// <summary>
+    /// 内容:
+    ///   Sign=1なら即値にジャンプ
+    /// フォーマット:
+    ///   JLT(u8) Imm(u16)
+    /// </summary>
+    JLT,
     #endregion
 
     // システムコール
     #region SYSCALL
+    /// <summary>
+    /// 内容:
+    ///   エンジン側で実装されている関数を実行する
+    /// フォーマット:
+    ///   SYSCALL(u8) Imm(u32)
+    /// </summary>
+    SYSCALL,
     #endregion
-
   } // enum
 } // namespace

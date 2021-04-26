@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using TestVm.Core.Collections;
+using System.Linq;
 
 namespace TestVm.Core.Vm
 {
@@ -32,8 +34,8 @@ namespace TestVm.Core.Vm
     public bool IsZero { get; private set; } = false;
     public bool IsSign { get; private set; } = false;
 
-    private Queue<Func<bool>> _apiQueue = new Queue<Func<bool>>();
-    private Dictionary<OPCODE, Func<bool>> _opTable = new Dictionary<OPCODE, Func<bool>>();
+    private Dictionary<OPCODE, Func<BytecodeStream, bool>> _opTable
+      = new Dictionary<OPCODE, Func<BytecodeStream, bool>>();
 
     public string Errors => string.Join("\n", _errors);
     public bool IsError => _errors.Count != 0;
@@ -42,24 +44,31 @@ namespace TestVm.Core.Vm
     BytecodeStream _code = default;
     MemoryObj _memory = default;
     Register[] _registers = default;
+    IEnumerator<int> _itr = default;
+    VmStatus _status = default;
+    object _instance = default;
+    List<MethodInfo> _methods = new List<MethodInfo>();
 
     public Vm()
     {
       RegisterOpTable();
     }
 
-    public void Init(BytecodeStream code)
+    public void Init(BytecodeStream code, object instance = null)
     {
       _code = code;
       _memory = new MemoryObj(MEM_SIZE);
-      _apiQueue.Clear();
       _errors.Clear();
-      
+
       _registers = new Register[REG_SIZE];
       for (int i = 0; i < REG_SIZE; ++i)
         _registers[i] = new Register();
       _registers[BASE_PTR][0] = MEM_SIZE;
       _registers[STACK_PTR][0] = MEM_SIZE;
+
+      _instance = instance;
+      _methods.Clear();
+      RegisterBuildMethods();
     }
 
     public void Run()
@@ -69,30 +78,49 @@ namespace TestVm.Core.Vm
 
     public bool StepRun()
     {
-      IsEnd = _code.IsEnd;
       if (IsEnd) return false;
+      if (_itr != null)
+      {
+        _itr.MoveNext();
+        switch (_itr.Current)
+        {
+          case VmStatus.HALT:
+            IsEnd = true;
+            return PushError("組み込み関数からHALTを検出しました");
+          case VmStatus.FINISH:
+            _itr = null;
+            SetFromVmStatus(_status);
+            return true;
+          case VmStatus.CONTINUE:
+            return true;
+          default:
+            IsEnd = true;
+            return PushError("組み込み関数で不正な値が検出されました");
+        }
+      }
+      if (_code.IsEnd) return false;
       OPCODE op = (OPCODE)_code.ReadByte();
-      if (_opTable.TryGetValue(op, out Func<bool> opFunc))
-        return opFunc();
+      if (_opTable.TryGetValue(op, out Func<BytecodeStream, bool> opFunc))
+        return opFunc(_code);
       return PushError($"実行できないOPCODEです => {op}");
     }
 
     #region Opcode Runner
-    public bool OpLoadB()
+    public bool OpLoadB(BytecodeStream code)
     {
-      int regId = _code.ReadByte();
-      int memPtr = _code.ReadChar();
-      if(_memory.TryGetUi8(memPtr, out byte val8))
+      int regId = code.ReadByte();
+      int memPtr = code.ReadChar();
+      if (_memory.TryGetUi8(memPtr, out byte val8))
       {
         return TrySetRegUi8(regId, val8);
       }
       return PushError($"メモリ範囲外を指定しました => ptr: {memPtr}");
     }
 
-    public bool OpLoadW()
+    public bool OpLoadW(BytecodeStream code)
     {
-      int regId = _code.ReadByte();
-      int memPtr = _code.ReadChar();
+      int regId = code.ReadByte();
+      int memPtr = code.ReadChar();
       if (_memory.TryGetUi16(memPtr, out ushort val16))
       {
         return TrySetRegUi16(regId, val16);
@@ -100,10 +128,10 @@ namespace TestVm.Core.Vm
       return PushError($"メモリ範囲外を指定しました => ptr: {memPtr}");
     }
 
-    public bool OpLoadD()
+    public bool OpLoadD(BytecodeStream code)
     {
-      int regId = _code.ReadByte();
-      int memPtr = _code.ReadChar();
+      int regId = code.ReadByte();
+      int memPtr = code.ReadChar();
       if (_memory.TryGetUi32(memPtr, out uint val32))
       {
         return TrySetRegUi32(regId, val32);
@@ -111,57 +139,207 @@ namespace TestVm.Core.Vm
       return PushError($"メモリ範囲外を指定しました => ptr: {memPtr}");
     }
 
-    public bool OpSubB()
+    public bool OpStoreB(BytecodeStream code)
     {
-      int rsId = _code.ReadByte();
-      int rtId = _code.ReadByte();
-      uint a, b;
-      if (!TryGetReg(rsId, out a))
-        return false;
-      if (!TryGetReg(rtId, out b))
-        return false;
-
-      return TrySetRegUi8(rsId, (byte)(a - b));
+      int regId = code.ReadByte();
+      int memPtr = code.ReadChar();
+      if (TryGetReg(regId, out uint val))
+      {
+        return _memory.TrySetUi8(memPtr, (byte)val);
+      }
+      return PushRegError(regId);
     }
 
-    public bool OpSubW()
+    public bool OpStoreW(BytecodeStream code)
     {
-      int rsId = _code.ReadByte();
-      int rtId = _code.ReadByte();
-      uint a, b;
-      if (!TryGetReg(rsId, out a))
-        return false;
-      if (!TryGetReg(rtId, out b))
-        return false;
-
-      return TrySetRegUi16(rsId, (ushort)(a - b));
+      int regId = code.ReadByte();
+      int memPtr = code.ReadChar();
+      if (TryGetReg(regId, out uint val))
+      {
+        return _memory.TrySetUi16(memPtr, (ushort)val);
+      }
+      return PushRegError(regId);
     }
 
-    public bool OpSubD()
+    public bool OpStoreD(BytecodeStream code)
     {
-      int rsId = _code.ReadByte();
-      int rtId = _code.ReadByte();
-      uint a, b;
-      if (!TryGetReg(rsId, out a))
-        return false;
-      if (!TryGetReg(rtId, out b))
-        return false;
-
-      return TrySetRegUi32(rsId, (a - b));
+      int regId = code.ReadByte();
+      int memPtr = code.ReadChar();
+      if (TryGetReg(regId, out uint val))
+      {
+        return _memory.TrySetUi32(memPtr, val);
+      }
+      return PushRegError(regId);
     }
 
-    public bool OpCmp()
+    public bool OpMoveIB(BytecodeStream code)
     {
-      int rsId = _code.ReadByte();
-      int rtId = _code.ReadByte();
-      uint a, b;
-      if (!TryGetReg(rsId, out a))
-        return false;
-      if (!TryGetReg(rtId, out b))
-        return false;
+      int regId = code.ReadByte();
+      byte imm = code.ReadByte();
+      if (!TrySetRegUi8(regId, imm))
+        return PushRegError(regId);
+      return true;
+    }
 
-      IsZero = (a - b) == 0;
-      IsSign = ((a - b) >> 31) == 1;
+    public bool OpMoveIW(BytecodeStream code)
+    {
+      int regId = code.ReadByte();
+      ushort imm = code.ReadChar();
+      if (!TrySetRegUi16(regId, imm))
+        return PushRegError(regId);
+      return true;
+    }
+
+    public bool OpMoveID(BytecodeStream code)
+    {
+      int regId = code.ReadByte();
+      uint imm = (uint)code.ReadInt();
+      if (!TrySetRegUi32(regId, imm))
+        return PushRegError(regId);
+      return true;
+    }
+
+    public bool OpMoveB(BytecodeStream code)
+    {
+      int rsId = code.ReadByte();
+      int rtId = code.ReadByte();
+      uint a;
+      if (!TryGetReg(rsId, out a))
+        return PushRegError(rsId);
+      if (!TrySetRegUi8(rtId, (byte)a))
+        return PushRegError(rtId);
+      return true;
+    }
+
+    public bool OpMoveW(BytecodeStream code)
+    {
+      int rsId = code.ReadByte();
+      int rtId = code.ReadByte();
+      uint a;
+      if (!TryGetReg(rsId, out a))
+        return PushRegError(rsId);
+      if (!TrySetRegUi16(rtId, (ushort)a))
+        return PushRegError(rtId);
+      return true;
+    }
+
+    public bool OpMoveD(BytecodeStream code)
+    {
+      int rsId = code.ReadByte();
+      int rtId = code.ReadByte();
+      uint a;
+      if (!TryGetReg(rsId, out a))
+        return PushRegError(rsId);
+      if (!TrySetRegUi32(rtId, a))
+        return PushRegError(rtId);
+      return true;
+    }
+
+    public bool OpAddB(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (byte)(a + b));
+
+    public bool OpAddW(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (ushort)(a + b));
+
+    public bool OpAddD(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (a + b));
+
+    public bool OpSubB(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (byte)(a - b));
+
+    public bool OpSubW(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (ushort)(a - b));
+
+    public bool OpSubD(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (a - b));
+
+    public bool OpMulB(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (byte)(a * b));
+
+    public bool OpMulW(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (ushort)(a * b));
+
+    public bool OpMulD(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (a * b));
+
+    public bool OpDivB(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (byte)(a / b));
+
+    public bool OpDivW(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (ushort)(a / b));
+
+    public bool OpDivD(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (a / b));
+
+    public bool OpRemB(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (byte)(a % b));
+
+    public bool OpRemW(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (ushort)(a % b));
+
+    public bool OpRemD(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (a % b));
+
+    public bool OpCmpB(BytecodeStream code)
+      => OpCmpHelper(code, (a, b) => ((a - b) >> 7 & 1) == 1);
+
+    public bool OpCmpW(BytecodeStream code)
+      => OpCmpHelper(code, (a, b) => ((a - b) >> 15 & 1) == 1);
+
+    public bool OpCmpD(BytecodeStream code)
+      => OpCmpHelper(code, (a, b) => ((a - b) >> 31 & 1) == 1);
+
+    public bool OpJmp(BytecodeStream code)
+    {
+      ushort address = code.ReadChar();
+      if (code.TrySetPosition(address))
+        return true;
+
+      return PushError("参照不可能な箇所にジャンプしようとしました");
+    }
+
+    public bool OpJeq(BytecodeStream code)
+    {
+      ushort address = code.ReadChar();
+      if (!IsZero) return true;
+
+      if (code.TrySetPosition(address))
+        return true;
+
+      return PushError("参照不可能な箇所にジャンプしようとしました");
+    }
+
+    public bool OpJne(BytecodeStream code)
+    {
+      ushort address = code.ReadChar();
+      if (IsZero) return true;
+
+      if (code.TrySetPosition(address))
+        return true;
+
+      return PushError("参照不可能な箇所にジャンプしようとしました");
+    }
+
+    public bool OpJlt(BytecodeStream code)
+    {
+      ushort address = code.ReadChar();
+      if (!IsSign) return true;
+
+      if (code.TrySetPosition(address))
+        return true;
+
+      return PushError("参照不可能な箇所にジャンプしようとしました");
+    }
+
+    public bool OpSysCall(BytecodeStream code)
+    {
+      int methodId = code.ReadInt();
+
+      if (methodId < 0 || methodId > _methods.Count)
+        return PushError("組み込み関数IDが不正です");
+
+      CreateStatus();
+      _itr = _methods[methodId].Invoke(_instance, new object[] { _status }) as IEnumerator<int>;
 
       return true;
     }
@@ -223,26 +401,6 @@ namespace TestVm.Core.Vm
     }
     #endregion
 
-    private bool PushError(string err)
-    {
-      _errors.Add(err);
-      return false;
-    }
-
-    private void RegisterOpTable()
-    {
-      // TODO: _opTableの登録
-      _opTable[OPCODE.LOAD_B] = OpLoadB;
-      _opTable[OPCODE.LOAD_W] = OpLoadW;
-      _opTable[OPCODE.LOAD_D] = OpLoadD;
-      _opTable[OPCODE.SUB_B] = OpSubB;
-      _opTable[OPCODE.SUB_W] = OpSubW;
-      _opTable[OPCODE.SUB_D] = OpSubW;
-      _opTable[OPCODE.CMP_B] = OpCmp;
-      _opTable[OPCODE.CMP_W] = OpCmp;
-      _opTable[OPCODE.CMP_D] = OpCmp;
-    }
-
     #region Register Access Helper
     public int RegType(int idx, int type)
       => idx * 4 + type;
@@ -281,7 +439,7 @@ namespace TestVm.Core.Vm
 
     public bool TrySetRegUi8(int id, byte val)
     {
-      if(id / 4 < 0 || _registers.Length <= id / 4)
+      if (id / 4 < 0 || _registers.Length <= id / 4)
       {
         return PushError($"レジスタの値の設定に失敗しました");
       }
@@ -290,6 +448,191 @@ namespace TestVm.Core.Vm
         return PushError($"レジスタの値の設定に失敗しました");
       }
       _registers[id / 4][id % 4] = val;
+      return true;
+    }
+    #endregion
+
+    #region Memory Access Helper
+    public byte GetMemory8(int ptr)
+    {
+      byte ret;
+      _memory.TryGetUi8(ptr, out ret);
+      return ret;
+    }
+
+    public ushort GetMemory16(int ptr)
+    {
+      ushort ret;
+      _memory.TryGetUi16(ptr, out ret);
+      return ret;
+    }
+
+    public uint GetMemory32(int ptr)
+    {
+      uint ret;
+      _memory.TryGetUi32(ptr, out ret);
+      return ret;
+    }
+    #endregion
+
+    #region VmStatus Helper
+    private void CreateStatus()
+    {
+      _status = new VmStatus();
+      _status.isEnd = IsEnd;
+      _status.isZero = IsZero;
+      _status.isSign = IsSign;
+
+      _status.memory = new MemoryObj(_memory);
+      _status.registers = new Register[_registers.Length];
+      Array.Copy(_registers, _status.registers, _registers.Length);
+    }
+
+    private void SetFromVmStatus(VmStatus status)
+    {
+      IsEnd = status.isEnd;
+      IsZero = status.isZero;
+      IsSign = status.isSign;
+
+      _memory = new MemoryObj(status.memory);
+      _registers = new Register[status.registers.Length];
+      Array.Copy(status.registers, _registers, status.registers.Length);
+    }
+    #endregion
+
+    private bool PushError(string err)
+    {
+      _errors.Add(err);
+      return false;
+    }
+
+    private bool PushRegError(int rid)
+    {
+      _errors.Add($"Reg[{rid / 4}].{rid % 4}参照に失敗しました");
+      return false;
+    }
+
+    private void RegisterBuildMethods()
+    {
+      if (_instance == null) return;
+      _methods = _instance.GetType()
+        .GetMethods()
+        .Where(itr => itr.ReturnType == typeof(IEnumerator<int>))
+        .ToList();
+    }
+
+    private void RegisterOpTable()
+    {
+      _opTable[OPCODE.LOAD_B] = OpLoadB;
+      _opTable[OPCODE.LOAD_W] = OpLoadW;
+      _opTable[OPCODE.LOAD_D] = OpLoadD;
+      _opTable[OPCODE.STORE_B] = OpStoreB;
+      _opTable[OPCODE.STORE_W] = OpStoreW;
+      _opTable[OPCODE.STORE_D] = OpStoreD;
+
+      _opTable[OPCODE.MOVE_I_B] = OpMoveIB;
+      _opTable[OPCODE.MOVE_I_W] = OpMoveIW;
+      _opTable[OPCODE.MOVE_I_D] = OpMoveID;
+      _opTable[OPCODE.MOVE_B] = OpMoveB;
+      _opTable[OPCODE.MOVE_W] = OpMoveW;
+      _opTable[OPCODE.MOVE_D] = OpMoveD;
+
+      _opTable[OPCODE.ADD_B] = OpAddB;
+      _opTable[OPCODE.ADD_W] = OpAddW;
+      _opTable[OPCODE.ADD_D] = OpAddD;
+      _opTable[OPCODE.SUB_B] = OpSubB;
+      _opTable[OPCODE.SUB_W] = OpSubW;
+      _opTable[OPCODE.SUB_D] = OpSubD;
+      _opTable[OPCODE.MUL_B] = OpMulB;
+      _opTable[OPCODE.MUL_W] = OpMulW;
+      _opTable[OPCODE.MUL_D] = OpMulD;
+      _opTable[OPCODE.DIV_B] = OpDivB;
+      _opTable[OPCODE.DIV_W] = OpDivW;
+      _opTable[OPCODE.DIV_D] = OpDivD;
+      _opTable[OPCODE.REM_B] = OpRemB;
+      _opTable[OPCODE.REM_W] = OpRemW;
+      _opTable[OPCODE.REM_D] = OpRemD;
+
+      _opTable[OPCODE.CMP_B] = OpCmpB;
+      _opTable[OPCODE.CMP_W] = OpCmpW;
+      _opTable[OPCODE.CMP_D] = OpCmpD;
+
+      _opTable[OPCODE.JMP] = OpJmp;
+      _opTable[OPCODE.JEQ] = OpJeq;
+      _opTable[OPCODE.JNE] = OpJne;
+      _opTable[OPCODE.JLT] = OpJlt;
+
+      _opTable[OPCODE.SYSCALL] = OpSysCall;
+    }
+
+    #region Opcode Helper
+    private bool GetRegVal(
+      BytecodeStream code,
+      out int rsId,
+      out uint a,
+      out uint b)
+    {
+      rsId = code.ReadByte();
+      int rtId = code.ReadByte();
+      b = 0;
+      if (!TryGetReg(rsId, out a))
+        return PushRegError(rsId);
+      if (!TryGetReg(rtId, out b))
+        return PushRegError(rtId);
+      return true;
+    }
+
+    private bool OpCalcHelper(
+      BytecodeStream code,
+      Func<uint, uint, byte> calc)
+    {
+      uint a, b;
+      int rsId;
+      if (!GetRegVal(code, out rsId, out a, out b))
+        return false;
+
+      return TrySetRegUi8(rsId, calc(a, b));
+    }
+
+    private bool OpCalcHelper(
+      BytecodeStream code,
+      Func<uint, uint, ushort> calc)
+    {
+      uint a, b;
+      int rsId;
+      if (!GetRegVal(code, out rsId, out a, out b))
+        return false;
+
+      return TrySetRegUi16(rsId, calc(a, b));
+    }
+
+    private bool OpCalcHelper(
+      BytecodeStream code,
+      Func<uint, uint, uint> calc)
+    {
+      uint a, b;
+      int rsId;
+      if (!GetRegVal(code, out rsId, out a, out b))
+        return false;
+
+      return TrySetRegUi32(rsId, calc(a, b));
+    }
+
+    private bool OpCmpHelper(
+      BytecodeStream code,
+      Func<uint, uint, bool> isSign)
+    {
+      int rsId = code.ReadByte();
+      int rtId = code.ReadByte();
+      uint a, b;
+      if (!TryGetReg(rsId, out a))
+        return PushRegError(rsId);
+      if (!TryGetReg(rtId, out b))
+        return PushRegError(rtId);
+
+      IsZero = (a - b) == 0;
+      IsSign = isSign(a, b);
+
       return true;
     }
     #endregion

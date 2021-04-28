@@ -213,14 +213,119 @@
     REM_D,
     #endregion
     #region SLL
+    /// <summary>
+    /// 内容:
+    ///   レジスタの値を定数で左シフト結果をレジスタに格納（byte）
+    /// フォーマット:
+    ///   SLL_B(u8) R(u8) Imm(u8)
+    /// </summary>
+    SLL_B,
+    /// <summary>
+    /// 内容:
+    ///   レジスタの値を定数で左シフト結果をレジスタに格納（ushort）
+    /// フォーマット:
+    ///   SLL_W(u8) R(u8) Imm(u8)
+    /// </summary>
+    SLL_W,
+    /// <summary>
+    /// 内容:
+    ///   レジスタの値を定数で左シフト結果をレジスタに格納（uint）
+    /// フォーマット:
+    ///   SLL_D(u8) R(u8) Imm(u16)
+    /// </summary>
+    SLL_D,
     #endregion
     #region SRL
+    /// <summary>
+    /// 内容:
+    ///   レジスタの値を定数で右シフト結果をレジスタに格納（byte）
+    /// フォーマット:
+    ///   SRL_B(u8) R(u8) Imm(u8)
+    /// </summary>
+    SRL_B,
+    /// <summary>
+    /// 内容:
+    ///   レジスタの値を定数で右シフト結果をレジスタに格納（ushort）
+    /// フォーマット:
+    ///   SRL_W(u8) R(u8) Imm(u8)
+    /// </summary>
+    SRL_W,
+    /// <summary>
+    /// 内容:
+    ///   レジスタの値を定数で右シフト結果をレジスタに格納（uint）
+    /// フォーマット:
+    ///   SRL_D(u8) R(u8) Imm(u16)
+    /// </summary>
+    SRL_D,
     #endregion
     #region AND
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の論理積結果をレジスタに格納（byte）
+    /// フォーマット:
+    ///   AND_B(u8) R(u8) R(u8)
+    /// </summary>
+    AND_B,
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の論理積結果をレジスタに格納（ushort）
+    /// フォーマット:
+    ///   AND_W(u8) R(u8) R(u8)
+    /// </summary>
+    AND_W,
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の論理積結果をレジスタに格納（uint）
+    /// フォーマット:
+    ///   AND_D(u8) R(u8) R(u8)
+    /// </summary>
+    AND_D,
     #endregion
     #region OR
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の論理和結果をレジスタに格納（byte）
+    /// フォーマット:
+    ///   OR_B(u8) R(u8) R(u8)
+    /// </summary>
+    OR_B,
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の論理和結果をレジスタに格納（ushort）
+    /// フォーマット:
+    ///   OR_W(u8) R(u8) R(u8)
+    /// </summary>
+    OR_W,
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の論理和結果をレジスタに格納（uint）
+    /// フォーマット:
+    ///   OR_D(u8) R(u8) R(u8)
+    /// </summary>
+    OR_D,
     #endregion
     #region XOR
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の排他的論理和結果をレジスタに格納（byte）
+    /// フォーマット:
+    ///   XOR_B(u8) R(u8) R(u8)
+    /// </summary>
+    XOR_B,
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の排他的論理和結果をレジスタに格納（ushort）
+    /// フォーマット:
+    ///   OR_W(u8) R(u8) R(u8)
+    /// </summary>
+    XOR_W,
+    /// <summary>
+    /// 内容:
+    ///   レジスタ同士の排他的論理和結果をレジスタに格納（uint）
+    /// フォーマット:
+    ///   OR_D(u8) R(u8) R(u8)
+    /// </summary>
+    XOR_D,
     #endregion
 
     // フラグレジスタ設定

@@ -21,11 +21,11 @@ x: オミット
 | o        | MUL     |      |
 | o        | DIV     |      |
 | o        | REM     |      |
-|          | SLL     |      |
-|          | SRL     |      |
-|          | AND     |      |
-|          | OR      |      |
-|          | XOR     |      |
+| o        | SLL     |      |
+| o        | SRL     |      |
+| o        | AND     |      |
+| o        | OR      |      |
+| o        | XOR     |      |
 | o        | CMP     |      |
 | o        | JMP     |      |
 | o        | JEQ     |      |

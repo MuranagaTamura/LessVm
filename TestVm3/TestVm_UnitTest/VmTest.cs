@@ -998,6 +998,484 @@ namespace TestVm_UnitTest
     }
 
     [TestMethod]
+    public void TestShift()
+    {
+      #region Left Shift
+      #region byte
+      byte a8 = 0x12;
+      byte b8 = 0x03;
+      byte c8 = 0x90;
+      Vm vm = new Vm();
+      List<byte> code = new List<byte>();
+      code.Add((byte)OPCODE.SLL_B);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_8H));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_8H));
+      BytecodeStream stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi8(vm.RegType(2, Vm.REG_TYPE_8H), a8);
+      vm.TrySetRegUi8(vm.RegType(3, Vm.REG_TYPE_8H), b8);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b8,
+          (byte)vm.GetReg(vm.RegType(3, Vm.REG_TYPE_8H)),
+          "レジスタ8Hに格納できていません");
+      Assert.AreEqual(
+          c8,
+          (byte)vm.GetReg(vm.RegType(2, Vm.REG_TYPE_8H)),
+          "レジスタ8Hに格納できていません");
+
+      vm = new Vm();
+      code.Clear();
+      code.Add((byte)OPCODE.SLL_B);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_8L));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_8L));
+      stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi8(vm.RegType(2, Vm.REG_TYPE_8L), a8);
+      vm.TrySetRegUi8(vm.RegType(3, Vm.REG_TYPE_8L), b8);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b8,
+          (byte)vm.GetReg(vm.RegType(3, Vm.REG_TYPE_8L)),
+          "レジスタ8Lに格納できていません");
+      Assert.AreEqual(
+          c8,
+          (byte)vm.GetReg(vm.RegType(2, Vm.REG_TYPE_8L)),
+          "レジスタ8Lに格納できていません");
+      #endregion
+      #region ushort
+      ushort a16 = 0x1234;
+      ushort b16 = 0x0003;
+      ushort c16 = 0x91A0;
+      vm = new Vm();
+      code.Clear();
+      code.Add((byte)OPCODE.SLL_W);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_16));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_16));
+      stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi16(vm.RegType(2, Vm.REG_TYPE_16), a16);
+      vm.TrySetRegUi16(vm.RegType(3, Vm.REG_TYPE_16), b16);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b16,
+          (ushort)vm.GetReg(vm.RegType(3, Vm.REG_TYPE_16)),
+          "レジスタ16に格納できていません");
+      Assert.AreEqual(
+          c16,
+          (ushort)vm.GetReg(vm.RegType(2, Vm.REG_TYPE_16)),
+          "レジスタ16に格納できていません");
+      #endregion
+      #region uint
+      uint a32 = 0x12345678;
+      uint b32 = 0x00000005;
+      uint c32 = 0x468ACF00;
+      vm = new Vm();
+      code.Clear();
+      code.Add((byte)OPCODE.SLL_D);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_32));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_32));
+      stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi32(vm.RegType(2, Vm.REG_TYPE_32), a32);
+      vm.TrySetRegUi32(vm.RegType(3, Vm.REG_TYPE_32), b32);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b32,
+          vm.GetReg(vm.RegType(3, Vm.REG_TYPE_32)),
+          "レジスタ32に格納できていません");
+      Assert.AreEqual(
+          c32,
+          vm.GetReg(vm.RegType(2, Vm.REG_TYPE_32)),
+          "レジスタ32に格納できていません");
+      #endregion
+      #endregion
+      #region Right Shift
+      #region byte
+      c8 = 0x02;
+      vm = new Vm();
+      code.Clear();
+      code.Add((byte)OPCODE.SRL_B);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_8H));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_8H));
+      stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi8(vm.RegType(2, Vm.REG_TYPE_8H), a8);
+      vm.TrySetRegUi8(vm.RegType(3, Vm.REG_TYPE_8H), b8);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b8,
+          (byte)vm.GetReg(vm.RegType(3, Vm.REG_TYPE_8H)),
+          "レジスタ8Hに格納できていません");
+      Assert.AreEqual(
+          c8,
+          (byte)vm.GetReg(vm.RegType(2, Vm.REG_TYPE_8H)),
+          "レジスタ8Hに格納できていません");
+
+      vm = new Vm();
+      code.Clear();
+      code.Add((byte)OPCODE.SRL_B);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_8L));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_8L));
+      stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi8(vm.RegType(2, Vm.REG_TYPE_8L), a8);
+      vm.TrySetRegUi8(vm.RegType(3, Vm.REG_TYPE_8L), b8);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b8,
+          (byte)vm.GetReg(vm.RegType(3, Vm.REG_TYPE_8L)),
+          "レジスタ8Lに格納できていません");
+      Assert.AreEqual(
+          c8,
+          (byte)vm.GetReg(vm.RegType(2, Vm.REG_TYPE_8L)),
+          "レジスタ8Lに格納できていません");
+      #endregion
+      #region ushort
+      c16 = 0x0246;
+      vm = new Vm();
+      code.Clear();
+      code.Add((byte)OPCODE.SRL_W);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_16));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_16));
+      stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi16(vm.RegType(2, Vm.REG_TYPE_16), a16);
+      vm.TrySetRegUi16(vm.RegType(3, Vm.REG_TYPE_16), b16);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b16,
+          (ushort)vm.GetReg(vm.RegType(3, Vm.REG_TYPE_16)),
+          "レジスタ16に格納できていません");
+      Assert.AreEqual(
+          c16,
+          (ushort)vm.GetReg(vm.RegType(2, Vm.REG_TYPE_16)),
+          "レジスタ16に格納できていません");
+      #endregion
+      #region uint
+      c32 = 0x0091A2B3;
+      vm = new Vm();
+      code.Clear();
+      code.Add((byte)OPCODE.SRL_D);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_32));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_32));
+      stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi32(vm.RegType(2, Vm.REG_TYPE_32), a32);
+      vm.TrySetRegUi32(vm.RegType(3, Vm.REG_TYPE_32), b32);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b32,
+          vm.GetReg(vm.RegType(3, Vm.REG_TYPE_32)),
+          "レジスタ32に格納できていません");
+      Assert.AreEqual(
+          c32,
+          vm.GetReg(vm.RegType(2, Vm.REG_TYPE_32)),
+          "レジスタ32に格納できていません");
+      #endregion
+      #endregion
+    }
+
+    [TestMethod]
+    public void TestAnd()
+    {
+      #region byte
+      byte a8 = 0x12;
+      byte b8 = 0x07;
+      byte c8 = 0x02;
+      Vm vm = new Vm();
+      List<byte> code = new List<byte>();
+      code.Add((byte)OPCODE.AND_B);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_8H));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_8H));
+      BytecodeStream stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi8(vm.RegType(2, Vm.REG_TYPE_8H), a8);
+      vm.TrySetRegUi8(vm.RegType(3, Vm.REG_TYPE_8H), b8);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b8,
+          (byte)vm.GetReg(vm.RegType(3, Vm.REG_TYPE_8H)),
+          "レジスタ8Hに格納できていません");
+      Assert.AreEqual(
+          c8,
+          (byte)vm.GetReg(vm.RegType(2, Vm.REG_TYPE_8H)),
+          "レジスタ8Hに格納できていません");
+
+      vm = new Vm();
+      code.Clear();
+      code.Add((byte)OPCODE.AND_B);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_8L));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_8L));
+      stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi8(vm.RegType(2, Vm.REG_TYPE_8L), a8);
+      vm.TrySetRegUi8(vm.RegType(3, Vm.REG_TYPE_8L), b8);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b8,
+          (byte)vm.GetReg(vm.RegType(3, Vm.REG_TYPE_8L)),
+          "レジスタ8Lに格納できていません");
+      Assert.AreEqual(
+          c8,
+          (byte)vm.GetReg(vm.RegType(2, Vm.REG_TYPE_8L)),
+          "レジスタ8Lに格納できていません");
+      #endregion
+      #region ushort
+      ushort a16 = 0x1234;
+      ushort b16 = 0x0765;
+      ushort c16 = 0x0224;
+      vm = new Vm();
+      code.Clear();
+      code.Add((byte)OPCODE.AND_W);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_16));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_16));
+      stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi16(vm.RegType(2, Vm.REG_TYPE_16), a16);
+      vm.TrySetRegUi16(vm.RegType(3, Vm.REG_TYPE_16), b16);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b16,
+          (ushort)vm.GetReg(vm.RegType(3, Vm.REG_TYPE_16)),
+          "レジスタ16に格納できていません");
+      Assert.AreEqual(
+          c16,
+          (ushort)vm.GetReg(vm.RegType(2, Vm.REG_TYPE_16)),
+          "レジスタ16に格納できていません");
+      #endregion
+      #region uint
+      uint a32 = 0x12345678;
+      uint b32 = 0x00000765;
+      uint c32 = 0x00000660;
+      vm = new Vm();
+      code.Clear();
+      code.Add((byte)OPCODE.AND_D);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_32));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_32));
+      stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi32(vm.RegType(2, Vm.REG_TYPE_32), a32);
+      vm.TrySetRegUi32(vm.RegType(3, Vm.REG_TYPE_32), b32);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b32,
+          vm.GetReg(vm.RegType(3, Vm.REG_TYPE_32)),
+          "レジスタ32に格納できていません");
+      Assert.AreEqual(
+          c32,
+          vm.GetReg(vm.RegType(2, Vm.REG_TYPE_32)),
+          "レジスタ32に格納できていません");
+      #endregion
+    }
+
+    [TestMethod]
+    public void TestOr()
+    {
+      #region byte
+      byte a8 = 0x12;
+      byte b8 = 0x07;
+      byte c8 = 0x17;
+      Vm vm = new Vm();
+      List<byte> code = new List<byte>();
+      code.Add((byte)OPCODE.OR_B);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_8H));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_8H));
+      BytecodeStream stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi8(vm.RegType(2, Vm.REG_TYPE_8H), a8);
+      vm.TrySetRegUi8(vm.RegType(3, Vm.REG_TYPE_8H), b8);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b8,
+          (byte)vm.GetReg(vm.RegType(3, Vm.REG_TYPE_8H)),
+          "レジスタ8Hに格納できていません");
+      Assert.AreEqual(
+          c8,
+          (byte)vm.GetReg(vm.RegType(2, Vm.REG_TYPE_8H)),
+          "レジスタ8Hに格納できていません");
+
+      vm = new Vm();
+      code.Clear();
+      code.Add((byte)OPCODE.OR_B);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_8L));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_8L));
+      stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi8(vm.RegType(2, Vm.REG_TYPE_8L), a8);
+      vm.TrySetRegUi8(vm.RegType(3, Vm.REG_TYPE_8L), b8);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b8,
+          (byte)vm.GetReg(vm.RegType(3, Vm.REG_TYPE_8L)),
+          "レジスタ8Lに格納できていません");
+      Assert.AreEqual(
+          c8,
+          (byte)vm.GetReg(vm.RegType(2, Vm.REG_TYPE_8L)),
+          "レジスタ8Lに格納できていません");
+      #endregion
+      #region ushort
+      ushort a16 = 0x1234;
+      ushort b16 = 0x0765;
+      ushort c16 = 0x1775;
+      vm = new Vm();
+      code.Clear();
+      code.Add((byte)OPCODE.OR_W);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_16));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_16));
+      stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi16(vm.RegType(2, Vm.REG_TYPE_16), a16);
+      vm.TrySetRegUi16(vm.RegType(3, Vm.REG_TYPE_16), b16);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b16,
+          (ushort)vm.GetReg(vm.RegType(3, Vm.REG_TYPE_16)),
+          "レジスタ16に格納できていません");
+      Assert.AreEqual(
+          c16,
+          (ushort)vm.GetReg(vm.RegType(2, Vm.REG_TYPE_16)),
+          "レジスタ16に格納できていません");
+      #endregion
+      #region uint
+      uint a32 = 0x12345678;
+      uint b32 = 0x00000765;
+      uint c32 = 0x1234577D;
+      vm = new Vm();
+      code.Clear();
+      code.Add((byte)OPCODE.OR_D);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_32));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_32));
+      stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi32(vm.RegType(2, Vm.REG_TYPE_32), a32);
+      vm.TrySetRegUi32(vm.RegType(3, Vm.REG_TYPE_32), b32);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b32,
+          vm.GetReg(vm.RegType(3, Vm.REG_TYPE_32)),
+          "レジスタ32に格納できていません");
+      Assert.AreEqual(
+          c32,
+          vm.GetReg(vm.RegType(2, Vm.REG_TYPE_32)),
+          "レジスタ32に格納できていません");
+      #endregion
+    }
+
+    [TestMethod]
+    public void TestXor()
+    {
+      #region byte
+      byte a8 = 0x12;
+      byte b8 = 0x07;
+      byte c8 = 0x15;
+      Vm vm = new Vm();
+      List<byte> code = new List<byte>();
+      code.Add((byte)OPCODE.XOR_B);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_8H));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_8H));
+      BytecodeStream stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi8(vm.RegType(2, Vm.REG_TYPE_8H), a8);
+      vm.TrySetRegUi8(vm.RegType(3, Vm.REG_TYPE_8H), b8);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b8,
+          (byte)vm.GetReg(vm.RegType(3, Vm.REG_TYPE_8H)),
+          "レジスタ8Hに格納できていません");
+      Assert.AreEqual(
+          c8,
+          (byte)vm.GetReg(vm.RegType(2, Vm.REG_TYPE_8H)),
+          "レジスタ8Hに格納できていません");
+
+      vm = new Vm();
+      code.Clear();
+      code.Add((byte)OPCODE.XOR_B);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_8L));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_8L));
+      stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi8(vm.RegType(2, Vm.REG_TYPE_8L), a8);
+      vm.TrySetRegUi8(vm.RegType(3, Vm.REG_TYPE_8L), b8);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b8,
+          (byte)vm.GetReg(vm.RegType(3, Vm.REG_TYPE_8L)),
+          "レジスタ8Lに格納できていません");
+      Assert.AreEqual(
+          c8,
+          (byte)vm.GetReg(vm.RegType(2, Vm.REG_TYPE_8L)),
+          "レジスタ8Lに格納できていません");
+      #endregion
+      #region ushort
+      ushort a16 = 0x1234;
+      ushort b16 = 0x0765;
+      ushort c16 = 0x1551;
+      vm = new Vm();
+      code.Clear();
+      code.Add((byte)OPCODE.XOR_W);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_16));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_16));
+      stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi16(vm.RegType(2, Vm.REG_TYPE_16), a16);
+      vm.TrySetRegUi16(vm.RegType(3, Vm.REG_TYPE_16), b16);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b16,
+          (ushort)vm.GetReg(vm.RegType(3, Vm.REG_TYPE_16)),
+          "レジスタ16に格納できていません");
+      Assert.AreEqual(
+          c16,
+          (ushort)vm.GetReg(vm.RegType(2, Vm.REG_TYPE_16)),
+          "レジスタ16に格納できていません");
+      #endregion
+      #region uint
+      uint a32 = 0x12345678;
+      uint b32 = 0x00000765;
+      uint c32 = 0x1234511D;
+      vm = new Vm();
+      code.Clear();
+      code.Add((byte)OPCODE.XOR_D);
+      code.Add((byte)vm.RegType(2, Vm.REG_TYPE_32));
+      code.Add((byte)vm.RegType(3, Vm.REG_TYPE_32));
+      stream = new BytecodeStream(code.ToArray());
+      vm.Init(stream);
+      vm.TrySetRegUi32(vm.RegType(2, Vm.REG_TYPE_32), a32);
+      vm.TrySetRegUi32(vm.RegType(3, Vm.REG_TYPE_32), b32);
+      vm.Run();
+      Assert.IsFalse(vm.IsError, $"VMでエラーが発生しました\n{vm.Errors}");
+      Assert.AreEqual(
+          b32,
+          vm.GetReg(vm.RegType(3, Vm.REG_TYPE_32)),
+          "レジスタ32に格納できていません");
+      Assert.AreEqual(
+          c32,
+          vm.GetReg(vm.RegType(2, Vm.REG_TYPE_32)),
+          "レジスタ32に格納できていません");
+      #endregion
+    }
+
+    [TestMethod]
     public void TestJmpAll()
     {
       #region JMP

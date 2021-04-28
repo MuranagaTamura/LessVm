@@ -280,6 +280,51 @@ namespace TestVm.Core.Vm
     public bool OpRemD(BytecodeStream code)
       => OpCalcHelper(code, (a, b) => (a % b));
 
+    public bool OpSllB(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (byte)(a << (byte)b));
+      
+    public bool OpSllW(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (ushort)(a << (byte)b));
+
+    public bool OpSllD(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (a << (ushort)b));
+
+    public bool OpSrlB(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (byte)(a >> (byte)b));
+
+    public bool OpSrlW(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (ushort)(a >> (byte)b));
+
+    public bool OpSrlD(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (a >> (ushort)b));
+
+    public bool OpAndB(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (byte)(a & b));
+
+    public bool OpAndW(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (ushort)(a & b));
+
+    public bool OpAndD(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (a & b));
+
+    public bool OpOrB(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (byte)(a | b));
+
+    public bool OpOrW(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (ushort)(a | b));
+
+    public bool OpOrD(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (a | b));
+
+    public bool OpXorB(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (byte)(a ^ b));
+
+    public bool OpXorW(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (ushort)(a ^ b));
+
+    public bool OpXorD(BytecodeStream code)
+      => OpCalcHelper(code, (a, b) => (a ^ b));
+
     public bool OpCmpB(BytecodeStream code)
       => OpCmpHelper(code, (a, b) => ((a - b) >> 7 & 1) == 1);
 
@@ -443,11 +488,10 @@ namespace TestVm.Core.Vm
       {
         return PushError($"レジスタの値の設定に失敗しました");
       }
-      if (id % 4 != 2 && id % 4 != 3)
-      {
-        return PushError($"レジスタの値の設定に失敗しました");
-      }
-      _registers[id / 4][id % 4] = val;
+      if (id % 4 == 2)
+        _registers[id / 4][2] = val;
+      else
+        _registers[id / 4][3] = val;
       return true;
     }
     #endregion
@@ -552,6 +596,21 @@ namespace TestVm.Core.Vm
       _opTable[OPCODE.REM_B] = OpRemB;
       _opTable[OPCODE.REM_W] = OpRemW;
       _opTable[OPCODE.REM_D] = OpRemD;
+      _opTable[OPCODE.SLL_B] = OpSllB;
+      _opTable[OPCODE.SLL_W] = OpSllW;
+      _opTable[OPCODE.SLL_D] = OpSllD;
+      _opTable[OPCODE.SRL_B] = OpSrlB;
+      _opTable[OPCODE.SRL_W] = OpSrlW;
+      _opTable[OPCODE.SRL_D] = OpSrlD;
+      _opTable[OPCODE.AND_B] = OpAndB;
+      _opTable[OPCODE.AND_W] = OpAndW;
+      _opTable[OPCODE.AND_D] = OpAndD;
+      _opTable[OPCODE.OR_B] = OpOrB;
+      _opTable[OPCODE.OR_W] = OpOrW;
+      _opTable[OPCODE.OR_D] = OpOrD;
+      _opTable[OPCODE.XOR_B] = OpXorB;
+      _opTable[OPCODE.XOR_W] = OpXorW;
+      _opTable[OPCODE.XOR_D] = OpXorD;
 
       _opTable[OPCODE.CMP_B] = OpCmpB;
       _opTable[OPCODE.CMP_W] = OpCmpW;

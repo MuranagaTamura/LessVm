@@ -593,8 +593,6 @@ namespace TestVm_UnitTest
       code.Add((byte)OPCODE.SYSCALL);
       code.Add(0x00);
       code.Add(0x00);
-      code.Add(0x00);
-      code.Add(0x00);
       BytecodeStream stream = new BytecodeStream(code.ToArray());
       vm.Init(stream, new VmTestMethods());
       vm.Run();

@@ -31,7 +31,7 @@
     /// 内容:
     ///   レジスタからメモリに格納（byte）
     /// フォーマット:
-    ///   STORE_B(u8) R(u8) Mem(u32)
+    ///   STORE_B(u8) R(u8) Mem(u16)
     /// </summary>
     STORE_B,
     /// <summary>
@@ -45,7 +45,7 @@
     /// 内容:
     ///   レジスタからメモリに格納（uint）
     /// フォーマット:
-    ///   STORE_D(u8) R(u8) Mem(u32)
+    ///   STORE_D(u8) R(u8) Mem(u16)
     /// </summary>
     STORE_D,
     #endregion
@@ -75,21 +75,21 @@
     MOVE_I_D,
     /// <summary>
     /// 内容:
-    ///   即値からレジスタに格納（byte）
+    ///   レジスタからレジスタに格納（byte）
     /// フォーマット:
     ///   MOVE_B(u8) R(u8) R(u8)
     /// </summary>
     MOVE_B,
     /// <summary>
     /// 内容:
-    ///   即値からレジスタに格納（ushort）
+    ///   レジスタからレジスタに格納（ushort）
     /// フォーマット:
     ///   MOVE_W(u8) R(u8) R(u8)
     /// </summary>
     MOVE_W,
     /// <summary>
     /// 内容:
-    ///   即値からレジスタに格納（uint）
+    ///   レジスタからレジスタに格納（uint）
     /// フォーマット:
     ///   MOVE_D(u8) R(u8) R(u8)
     /// </summary>
@@ -332,21 +332,21 @@
     #region CMP
     /// <summary>
     /// 内容:
-    ///   即値からレジスタに格納（byte）
+    ///   レジスタ同士を比較結果をフラグに設定（byte）
     /// フォーマット:
     ///   CMP_B(u8) R(u8) R(u8)
     /// </summary>
     CMP_B,
     /// <summary>
     /// 内容:
-    ///   即値からレジスタに格納（ushort）
+    ///   レジスタ同士を比較結果をフラグに設定（ushort）
     /// フォーマット:
     ///   CMP_W(u8) R(u8) R(u8)
     /// </summary>
     CMP_W,
     /// <summary>
     /// 内容:
-    ///   即値からレジスタに格納（uint）
+    ///   レジスタ同士を比較結果をフラグに設定（uint）
     /// フォーマット:
     ///   CMP_D(u8) R(u8) R(u8)
     /// </summary>
@@ -384,7 +384,7 @@
     #region JLT
     /// <summary>
     /// 内容:
-    ///   Sign=1なら即値にジャンプ
+    ///   Sign=1かつZero=0なら即値にジャンプ
     /// フォーマット:
     ///   JLT(u8) Imm(u16)
     /// </summary>
@@ -397,7 +397,7 @@
     /// 内容:
     ///   エンジン側で実装されている関数を実行する
     /// フォーマット:
-    ///   SYSCALL(u8) Imm(u32)
+    ///   SYSCALL(u8) Imm(u16)
     /// </summary>
     SYSCALL,
     #endregion

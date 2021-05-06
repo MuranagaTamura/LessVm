@@ -20,7 +20,7 @@ namespace TestVm.Core.Vm
 
   public class Vm
   {
-    public const int REG_SIZE = 128;
+    public const int REG_SIZE = 64;
     public const int MEM_SIZE = 4096;
     public const int BASE_PTR = (int)GeneralRegType.ESP / 4;
     public const int STACK_PTR = (int)GeneralRegType.EBP / 4;
@@ -368,7 +368,7 @@ namespace TestVm.Core.Vm
     public bool OpJlt(BytecodeStream code)
     {
       ushort address = code.ReadChar();
-      if (!IsSign) return true;
+      if (!IsSign || IsZero) return true;
 
       if (code.TrySetPosition(address))
         return true;
@@ -378,7 +378,7 @@ namespace TestVm.Core.Vm
 
     public bool OpSysCall(BytecodeStream code)
     {
-      int methodId = code.ReadInt();
+      ushort methodId = code.ReadChar();
 
       if (methodId < 0 || methodId > _methods.Count)
         return PushError("組み込み関数IDが不正です");

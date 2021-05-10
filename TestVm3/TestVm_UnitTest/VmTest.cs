@@ -91,9 +91,9 @@ namespace TestVm_UnitTest
       Vm vm = new Vm();
       List<byte> code = new List<byte>();
       code.Add((byte)OPCODE.STORE_B);
+      code.Add(0x00);
+      code.Add(0x00);
       code.Add((byte)vm.RegType(2, Vm.REG_TYPE_8H));
-      code.Add(0x00);
-      code.Add(0x00);
       BytecodeStream stream = new BytecodeStream(code.ToArray());
       vm.Init(stream);
       vm.TrySetRegUi8(vm.RegType(2, Vm.REG_TYPE_8H), a8);
@@ -107,9 +107,9 @@ namespace TestVm_UnitTest
       vm = new Vm();
       code.Clear();
       code.Add((byte)OPCODE.STORE_B);
+      code.Add(0x00);
+      code.Add(0x00);
       code.Add((byte)vm.RegType(2, Vm.REG_TYPE_8L));
-      code.Add(0x00);
-      code.Add(0x00);
       stream = new BytecodeStream(code.ToArray());
       vm.Init(stream);
       vm.TrySetRegUi8(vm.RegType(2, Vm.REG_TYPE_8L), a8);
@@ -125,9 +125,9 @@ namespace TestVm_UnitTest
       vm = new Vm();
       code.Clear();
       code.Add((byte)OPCODE.STORE_W);
+      code.Add(0x00);
+      code.Add(0x00);
       code.Add((byte)vm.RegType(2, Vm.REG_TYPE_16));
-      code.Add(0x00);
-      code.Add(0x00);
       stream = new BytecodeStream(code.ToArray());
       vm.Init(stream);
       vm.TrySetRegUi16(vm.RegType(2, Vm.REG_TYPE_16), a16);
@@ -143,9 +143,9 @@ namespace TestVm_UnitTest
       vm = new Vm();
       code.Clear();
       code.Add((byte)OPCODE.STORE_D);
+      code.Add(0x00);
+      code.Add(0x00);
       code.Add((byte)vm.RegType(2, Vm.REG_TYPE_32));
-      code.Add(0x00);
-      code.Add(0x00);
       stream = new BytecodeStream(code.ToArray());
       vm.Init(stream);
       vm.TrySetRegUi32(vm.RegType(2, Vm.REG_TYPE_32), a32);

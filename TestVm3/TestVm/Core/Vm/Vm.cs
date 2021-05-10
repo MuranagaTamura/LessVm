@@ -71,6 +71,19 @@ namespace TestVm.Core.Vm
       RegisterBuildMethods();
     }
 
+    public bool InitMemory(BytecodeStream mem, int start, int end)
+    {
+      int length = end - start;
+      if (length < 0) return PushError("メモリの初期化失敗しました");
+      for (int i = 0; i < length && i < mem.Size; ++i)
+      {
+        if (!_memory.TrySetUi8(start + i, mem.ReadByte()))
+          return PushError("メモリの初期化に失敗しました");
+      }
+      return true;
+    }
+
+
     public void Run()
     {
       while (StepRun()) ;
@@ -141,8 +154,8 @@ namespace TestVm.Core.Vm
 
     public bool OpStoreB(BytecodeStream code)
     {
-      int regId = code.ReadByte();
       int memPtr = code.ReadChar();
+      int regId = code.ReadByte();
       if (TryGetReg(regId, out uint val))
       {
         return _memory.TrySetUi8(memPtr, (byte)val);
@@ -152,8 +165,8 @@ namespace TestVm.Core.Vm
 
     public bool OpStoreW(BytecodeStream code)
     {
-      int regId = code.ReadByte();
       int memPtr = code.ReadChar();
+      int regId = code.ReadByte();
       if (TryGetReg(regId, out uint val))
       {
         return _memory.TrySetUi16(memPtr, (ushort)val);
@@ -163,8 +176,8 @@ namespace TestVm.Core.Vm
 
     public bool OpStoreD(BytecodeStream code)
     {
-      int regId = code.ReadByte();
       int memPtr = code.ReadChar();
+      int regId = code.ReadByte();
       if (TryGetReg(regId, out uint val))
       {
         return _memory.TrySetUi32(memPtr, val);

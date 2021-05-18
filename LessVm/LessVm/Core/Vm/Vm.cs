@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using TestVm.Core.Collections;
+using LessVm.Core.Collections;
 using System.Linq;
 
-namespace TestVm.Core.Vm
+namespace LessVm.Core.Vm
 {
   public enum GeneralRegType
   {

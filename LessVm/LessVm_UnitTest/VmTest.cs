@@ -1,9 +1,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TestVm.Core.Vm;
-using TestVm.Core.Collections;
+using LessVm.Core.Vm;
+using LessVm.Core.Collections;
 using System.Collections.Generic;
 
-namespace TestVm_UnitTest
+namespace LessVm_UnitTest
 {
   [TestClass]
   public class VmTest

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace TestVm.Core.Collections
+namespace LessVm.Core.Collections
 {
   public class BytecodeStream
   {

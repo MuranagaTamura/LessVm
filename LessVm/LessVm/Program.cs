@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TestVm
+namespace LessVm
 {
   class Program
   {

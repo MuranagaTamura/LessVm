@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace TestVm.Core.Vm
+namespace LessVm.Core.Vm
 {
   [StructLayout(LayoutKind.Explicit)]
   public struct RegisterContext

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TestVm.Core.Collections
+namespace LessVm.Core.Collections
 {
   public class MemoryObj
   {

@@ -1,7 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TestVm.Core.Vm;
+using LessVm.Core.Vm;
 
-namespace TestVm_UnitTest
+namespace LessVm_UnitTest
 {
   [TestClass]
   public class RegisterTest

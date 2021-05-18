@@ -1,4 +1,4 @@
-﻿namespace TestVm.Core.Vm
+﻿namespace LessVm.Core.Vm
 {
   public enum OPCODE : byte
   {

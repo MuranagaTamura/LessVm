@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace TestVm2.Core.Collections
+namespace LessVm.Core.Collections
 {
   public class Stack<T>
   {

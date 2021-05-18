@@ -1,7 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TestVm.Core.Collections;
+using LessVm.Core.Collections;
 
-namespace TestVm_UnitTest
+namespace LessVm_UnitTest
 {
   [TestClass]
   public class TestMemory

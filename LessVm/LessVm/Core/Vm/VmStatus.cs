@@ -1,6 +1,6 @@
-﻿using TestVm.Core.Collections;
+﻿using LessVm.Core.Collections;
 
-namespace TestVm.Core.Vm
+namespace LessVm.Core.Vm
 {
   public class VmStatus
   {

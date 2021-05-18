@@ -1,8 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
-using TestVm.ScriptHelper;
+using LessVm.ScriptHelper;
 
-namespace TestVm_UnitTest
+namespace LessVm_UnitTest
 {
   [TestClass]
   public class ScriptHelperTest

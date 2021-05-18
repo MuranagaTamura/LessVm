@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TestVm\TestVm.csproj" />
+    <ProjectReference Include="..\LessVm\LessVm.csproj" />
   </ItemGroup>
 
 </Project>

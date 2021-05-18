@@ -1,4 +1,4 @@
-﻿namespace TestVm.ScriptHelper
+﻿namespace LessVm.ScriptHelper
 {
   public enum OPCODE : byte
   {

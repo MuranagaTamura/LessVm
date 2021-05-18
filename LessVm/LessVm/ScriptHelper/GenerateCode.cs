@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace TestVm.ScriptHelper
+namespace LessVm.ScriptHelper
 {
   public enum RegType
   {
